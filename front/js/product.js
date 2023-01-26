@@ -70,6 +70,26 @@ function listenForCartAddittion(product) {
       couleur: color,
       quantite: quantite,
     };
-    localStorage.setItem("panier", JSON.stringify(canap));
+
+    // Fonction pour ajouter au LocalStorage
+    const ajouterAuLocalStorage = () => {
+      produitDansLeLocalStorage.push(canap);
+      localStorage.setItem(
+        "product",
+        JSON.stringify(produitDansLeLocalStorage)
+      );
+    };
+
+    // On récupère les donées du LS
+    let produitDansLeLocalStorage = JSON.parse(localStorage.getItem("product"));
+
+    // On ajoute les produits au LS
+    if (produitDansLeLocalStorage) {
+      ajouterAuLocalStorage();
+    } else {
+      produitDansLeLocalStorage = [];
+      ajouterAuLocalStorage();
+      console.log(produitDansLeLocalStorage);
+    }
   });
 }
