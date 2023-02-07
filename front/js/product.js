@@ -58,38 +58,49 @@ function listenForCartAddittion(product) {
     }
 
     const quantite = document.querySelector("#quantity").value;
+
     // Vérification si la quantité est valide
     if (quantite < 1 || quantite > 100) {
       alert("Merci d'entrer une quantité comprise entre 1 et 100");
       return;
     }
 
+    alert("Produit bien ajouté au panier !");
+
     const canap = {
-      nom: product.name,
       id: id,
       couleur: color,
       quantite: quantite,
     };
 
-    // Fonction pour ajouter au LocalStorage
+    // On ajoute les produits au LocalStorage
     const ajouterAuLocalStorage = () => {
-      produitDansLeLocalStorage.push(canap);
-      localStorage.setItem(
-        "product",
-        JSON.stringify(produitDansLeLocalStorage)
-      );
+      cart.push(canap);
+      localStorage.setItem("products", JSON.stringify(cart));
     };
 
     // On récupère les donées du LS
-    let produitDansLeLocalStorage = JSON.parse(localStorage.getItem("product"));
+    let cart = JSON.parse(localStorage.getItem("products"));
 
     // On ajoute les produits au LS
-    if (produitDansLeLocalStorage) {
+    // for (let i = 0; i < cart.length; i++) {
+    //   let findProduct = cart.find((a) => a.id === product._id);
+    //   console.log("findProduct", findProduct.id);
+    //   if (findProduct != undefined) {
+    //     console.log("cart", cart[i].quantite);
+    //     cart[i].quantite += quantite;
+    //     return;
+    //   } else {
+    //     cart = [];
+    //     ajouterAuLocalStorage();
+    //     return;
+    //   }
+    // }
+    if (cart) {
       ajouterAuLocalStorage();
     } else {
-      produitDansLeLocalStorage = [];
+      cart = [];
       ajouterAuLocalStorage();
-      console.log(produitDansLeLocalStorage);
     }
   });
 }
