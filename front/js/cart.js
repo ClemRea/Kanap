@@ -1,4 +1,4 @@
-let cart = JSON.parse(localStorage.getItem("products"));
+let cart = get("products");
 
 if (!cart) {
   document.querySelector("h1").innerText = "Votre panier est vide !";
@@ -11,9 +11,9 @@ if (!cart) {
       listenForQtyUpdate(products);
       supprimerProduit(cart, products);
       afficherTotal(products);
+      soumettreFormulaire();
     });
 }
-
 // Fonction pour créer la liste complète des éléments
 function builCompleteList(cart, allProducts) {
   const list = [];
@@ -91,51 +91,84 @@ function listenForQtyUpdate(products) {
       .querySelector(
         `.cart__item[data-id="${product.id}"][data-color = "${product.couleur}"] .itemQuantity`
       )
-      .addEventListener("input", () => {
-        const quantite = document.querySelector(".itemQuantity").value;
-        console.log(quantite);
+      .addEventListener("input", (e) => {
+        const quantite = e.target.value;
         if (quantite < 1 || quantite > 100) {
           alert("Merci d'entrer une quantité comprise entre 1 et 100");
           return;
         }
+        if (!has("products")) {
+          let cart = get("products");
+          let findProduct = cart.find(
+            (a) => a.id === product.id && a.couleur === product.couleur
+          );
+          if (findProduct) {
+            findProduct.quantite =
+              Number(findProduct.quantite) + (quantite - findProduct.quantite);
+            store("products", cart);
+          }
+        }
       });
   });
 }
-
 // Fonction pour afficher le total des prix des articles
-function afficherTotal(cart, products) {
-  // Afficher le total des prix
-  let listePrix = [];
-  for (i = 0; i < cart.length; i++) {
-    const prixInCart = cart[i].price;
-    listePrix.push(prixInCart);
-  }
-  const reducer = (accumulator, currentValue) => accumulator + currentValue;
-  const totalPrix = listePrix.reduce(reducer);
-  document.querySelector("#totalPrice").innerText = totalPrix;
+function afficherTotal(cart) {
+  let totalArticle = 0;
+  let prixParQuantite = 0;
+  let totalPrix = [];
 
-  // Afficher le total des articles
-  let listeArticle = [];
-  for (j = 0; j < cart.length; j++) {
-    const quantityInCart = cart[j].quantite;
-    const quantityInt = parseInt(quantityInCart);
-    listeArticle.push(quantityInt);
-  }
-  const totalArticle = listeArticle.reduce(reducer);
+  // Récuperer et afficher la quantité des article dans le panier
+  cart.forEach((e) => {
+    totalArticle += e.quantite;
+  });
   document.querySelector("#totalQuantity").innerHTML = totalArticle;
+
+  // Récupérer le prix des articles
+  cart.forEach((f) => {
+    const prix = f.price;
+    const quantite = f.quantite;
+    prixParQuantite = prix * quantite;
+
+    // On ajoute le total des prix par la quantité dans la liste totalPrix
+    totalPrix.push(prixParQuantite);
+  });
+
+  // On fait la somme de tout les articles dans le panier, et on les affiche dans le html
+  const reducer = (accumulator, currentValue) => accumulator + currentValue;
+  const prixAfficher = totalPrix.reduce(reducer);
+  document.querySelector("#totalPrice").innerText = prixAfficher;
 }
 
-// Fonction poue supprimer un produit du panier
+// Fonction pour supprimer un produit du panier
 function supprimerProduit(cart, products) {
-  const supprimer = document.querySelectorAll(
-    ".cart__item__content__settings__delete"
-  );
-  // console.log("supprimer", supprimer);
+  // cart.forEach((i) => {
+  //   document
+  //     .querySelectorAll(".cart__item__content__settings__delete")
+  //     .addEventListener("click", (e) => {
+  //       const supprimer = e.target.value;
+  //       console.log(supprimer);
+  //     });
+  // });
+}
 
-  for (k = 0; k < supprimer.length; k++) {
-    supprimer[k].addEventListener("click", () => {
-      const supprimerId = cart[k];
-      // console.log("supprimerId", supprimerId);
-    });
-  }
+// Fonction pour soumettre le formulaire à l'api
+function soumettreFormulaire() {
+  const selectForm = document.querySelector(".cart__order__form");
+  selectForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const form = {
+      firstName: e.target.querySelector("#firstName").value,
+      lastName: e.target.querySelector("#lastName").value,
+      adresse: e.target.querySelector("#address").value,
+      city: e.target.querySelector("#city").value,
+      email: e.target.querySelector("#email").value,
+    };
+    const chargUtile = JSON.stringify(form);
+    fetch("http://localhost:3000/api/products/"),
+      {
+        methode: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: chargUtile,
+      };
+  });
 }

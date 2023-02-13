@@ -1,5 +1,5 @@
 // Récupérer l'id de l'article à partir de l'url
-const id = getIdFromULR();
+const id = getIdFromURL();
 
 // On récupère les données de l'API
 fetch("http://localhost:3000/api/products/" + id)
@@ -10,7 +10,7 @@ fetch("http://localhost:3000/api/products/" + id)
   });
 
 // Fonction pour Générer les Porduits depuis le lien
-function getIdFromULR() {
+function getIdFromURL() {
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
   });
@@ -67,40 +67,35 @@ function listenForCartAddittion(product) {
 
     alert("Produit bien ajouté au panier !");
 
-    const canap = {
-      id: id,
-      couleur: color,
-      quantite: quantite,
-    };
-
-    // On ajoute les produits au LocalStorage
-    const ajouterAuLocalStorage = () => {
-      cart.push(canap);
-      localStorage.setItem("products", JSON.stringify(cart));
-    };
-
-    // On récupère les donées du LS
-    let cart = JSON.parse(localStorage.getItem("products"));
-
     // On ajoute les produits au LS
-    // for (let i = 0; i < cart.length; i++) {
-    //   let findProduct = cart.find((a) => a.id === product._id);
-    //   console.log("findProduct", findProduct.id);
-    //   if (findProduct != undefined) {
-    //     console.log("cart", cart[i].quantite);
-    //     cart[i].quantite += quantite;
-    //     return;
-    //   } else {
-    //     cart = [];
-    //     ajouterAuLocalStorage();
-    //     return;
-    //   }
-    // }
-    if (cart) {
-      ajouterAuLocalStorage();
+    if (has("products")) {
+      const products = [];
+      const canap = {
+        id: product._id,
+        couleur: color,
+        quantite: Number(quantite),
+      };
+      products.push(canap);
+      store("products", products);
     } else {
-      cart = [];
-      ajouterAuLocalStorage();
+      let cart = get("products");
+      let findProduct = cart.find(
+        (a) => a.id === product._id && a.couleur === color
+      );
+      if (findProduct) {
+        findProduct.quantite = Number(findProduct.quantite) + Number(quantite);
+        store("products", cart);
+      } else {
+        let cart = get("products");
+        const canap = {
+          id: product._id,
+          couleur: color,
+          quantite: Number(quantite),
+        };
+        cart.push(canap);
+        store("products", cart);
+      }
     }
+    return;
   });
 }
