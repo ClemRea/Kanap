@@ -7,6 +7,11 @@ fetch("http://localhost:3000/api/products/" + id)
   .then((product) => {
     displayProduct(product);
     listenForCartAddittion(product);
+  })
+  .catch((e) => {
+    document.querySelector("main").remove();
+    alert("Ce produti n'existe pas");
+    document.location.href = "index.html";
   });
 
 // Fonction pour Générer les Porduits depuis le lien
@@ -29,7 +34,7 @@ function displayProduct(product) {
   document.querySelector(".item__img").appendChild(imageProduit);
 
   const prix = document.createElement("span");
-  prix.innerText = product.price;
+  prix.innerText = price(product.price);
   document.querySelector("#price").appendChild(prix);
 
   const descriptionProduit = document.createElement("p");

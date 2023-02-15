@@ -9,3 +9,13 @@ function get(key) {
 function has(key) {
   return !localStorage.getItem(key);
 }
+
+function price(amount) {
+  // Create our number formatter.
+  const formatter = new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  });
+
+  return formatter.format(amount);
+}

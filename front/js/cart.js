@@ -2,6 +2,8 @@ let cart = get("products");
 
 if (!cart) {
   document.querySelector("h1").innerText = "Votre panier est vide !";
+  document.querySelector("#totalQuantity").innerHTML = "Aucun";
+  document.querySelector("#totalPrice").innerHTML = "0 €";
 } else {
   fetch("http://localhost:3000/api/products/")
     .then((reponse) => reponse.json())
@@ -9,9 +11,8 @@ if (!cart) {
       const products = builCompleteList(cart, allProducts);
       afficherPanier(products);
       listenForQtyUpdate(products);
-      supprimerProduit(cart, products);
+      supprimerProduit(products);
       afficherTotal(products);
-      soumettreFormulaire();
     });
 }
 // Fonction pour créer la liste complète des éléments
@@ -62,7 +63,7 @@ function render(product) {
       <div class="cart__item__content__description">
       <h2>${product.name}</h2>
       <p>${product.couleur}</p>
-      <p>${product.price} €</p>
+      <p>${price(product.price)}</p>
     </div>
       <div class="cart__item__content__settings">
         <div class="cart__item__content__settings__quantity">
@@ -106,6 +107,7 @@ function listenForQtyUpdate(products) {
             findProduct.quantite =
               Number(findProduct.quantite) + (quantite - findProduct.quantite);
             store("products", cart);
+            window.location.reload();
           }
         }
       });
@@ -136,39 +138,141 @@ function afficherTotal(cart) {
   // On fait la somme de tout les articles dans le panier, et on les affiche dans le html
   const reducer = (accumulator, currentValue) => accumulator + currentValue;
   const prixAfficher = totalPrix.reduce(reducer);
-  document.querySelector("#totalPrice").innerText = prixAfficher;
+  document.querySelector("#totalPrice").innerText = price(prixAfficher);
 }
 
 // Fonction pour supprimer un produit du panier
-function supprimerProduit(cart, products) {
-  // cart.forEach((i) => {
-  //   document
-  //     .querySelectorAll(".cart__item__content__settings__delete")
-  //     .addEventListener("click", (e) => {
-  //       const supprimer = e.target.value;
-  //       console.log(supprimer);
-  //     });
-  // });
-}
-
-// Fonction pour soumettre le formulaire à l'api
-function soumettreFormulaire() {
-  const selectForm = document.querySelector(".cart__order__form");
-  selectForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const form = {
-      firstName: e.target.querySelector("#firstName").value,
-      lastName: e.target.querySelector("#lastName").value,
-      adresse: e.target.querySelector("#address").value,
-      city: e.target.querySelector("#city").value,
-      email: e.target.querySelector("#email").value,
-    };
-    const chargUtile = JSON.stringify(form);
-    fetch("http://localhost:3000/api/products/"),
-      {
-        methode: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: chargUtile,
-      };
+function supprimerProduit(products) {
+  products.forEach((product) => {
+    const supprimer = document.querySelector(
+      `.cart__item[data-id="${product.id}"][data-color = "${product.couleur}"] .deleteItem`
+    );
+    supprimer.addEventListener("click", (e) => {
+      let cart = get("products");
+      let findIndex = cart.findIndex(
+        (a) => a.id === product.id && a.couleur === product.couleur
+      );
+      cart.splice(findIndex, 1);
+      store("products", cart);
+      window.location.reload();
+    });
   });
 }
+
+/***********************************/
+/***VARIABLES POUR LE FORMULAIRE****/
+/***********************************/
+
+// Regex pour valider Prénom, Nom, Ville
+const noIntRegex =
+  /^[^0-9\.\,\"\?\!\;\:\#\$\%\&\(\)\*\+\-\/\<\>\=\@\[\]\\\^\_\{\}\|\~]{3,20}$/;
+
+// Regex pour valider l'email
+const emailRegex =
+  /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+
+// Regex pour valider l'adresse
+const adresseRegex = /^(([a-zA-ZÀ-ÿ0-9]+[\s\-]{1}[a-zA-ZÀ-ÿ0-9]+)){1,10}$/;
+
+const submitButtun = document.querySelector("#order");
+
+/******************************/
+/***VALIDATION DU FORMULAIRE***/
+/******************************/
+
+submitButtun.addEventListener("click", (e) => {
+  e.preventDefault();
+  const contact = {
+    firstName: document.querySelector("#firstName").value,
+    lastName: document.querySelector("#lastName").value,
+    adresse: document.querySelector("#address").value,
+    city: document.querySelector("#city").value,
+    email: document.querySelector("#email").value,
+  };
+
+  const firstName = contact.firstName;
+  const lastName = contact.lastName;
+  const city = contact.city;
+  const adresse = contact.adresse;
+  const email = contact.email;
+
+  //****Controle du Prénom****//
+  function controllerPrenom(noIntRegex, firstName) {
+    if (noIntRegex.test(firstName)) {
+      return true;
+    } else {
+      document.querySelector("#firstNameErrorMsg").innerText =
+        "Le Prénom n'est pas valide";
+      return false;
+    }
+  }
+
+  //****Controle du Nom****//
+  function controllerNom(noIntRegex, lastName) {
+    if (noIntRegex.test(lastName)) {
+      return true;
+    } else {
+      document.querySelector("#lastNameErrorMsg").innerText =
+        "Le Nom n'est pas valide";
+      return false;
+    }
+  }
+
+  //****Controle de la ville****//
+  function controllerVille(noIntRegex, city) {
+    if (noIntRegex.test(city)) {
+      return true;
+    } else {
+      document.querySelector("#cityErrorMsg").innerText =
+        "La ville n'est pas valide";
+      return false;
+    }
+  }
+
+  //****Controle de l'email****//
+  function controllerEmail(emailRegex, email) {
+    if (emailRegex.test(email)) {
+      return true;
+    } else {
+      document.querySelector("#emailErrorMsg").innerText =
+        "L'email n'est pas valide";
+      return false;
+    }
+  }
+
+  function controllerAdresse(adresseRegex, adresse) {
+    if (adresseRegex.test(adresse)) {
+      return true;
+    } else {
+      document.querySelector("#addressErrorMsg").innerText =
+        "l'adresse n'est pas valide";
+      return false;
+    }
+  }
+
+  //****VALIDER LE FORMULAIRE****/
+  if (
+    controllerPrenom(noIntRegex, firstName) &&
+    controllerNom(noIntRegex, lastName) &&
+    controllerVille(noIntRegex, city) &&
+    // controllerAdresse(adresseRegex, adresse) &&
+    controllerEmail(emailRegex, email)
+  ) {
+    const product_ID = [];
+    const aEnvoyer = {
+      cart,
+      contact,
+    };
+    product_ID.push(aEnvoyer);
+    fetch("http://localhost:3000/api/products");
+    {
+      methode: "POST";
+      body: {
+        JSON.stringify(product_ID);
+      }
+      headers: {
+        ("content-Type : application/json");
+      }
+    }
+  }
+});
