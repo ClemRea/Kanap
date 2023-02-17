@@ -15,6 +15,7 @@ if (!cart) {
       afficherTotal(products);
     });
 }
+
 // Fonction pour créer la liste complète des éléments
 function builCompleteList(cart, allProducts) {
   const list = [];
@@ -113,6 +114,7 @@ function listenForQtyUpdate(products) {
       });
   });
 }
+
 // Fonction pour afficher le total des prix des articles
 function afficherTotal(cart) {
   let totalArticle = 0;
@@ -172,7 +174,7 @@ const emailRegex =
   /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
 // Regex pour valider l'adresse
-const adresseRegex = /^(([a-zA-ZÀ-ÿ0-9]+[\s\-]{1}[a-zA-ZÀ-ÿ0-9]+)){1,10}$/;
+const adresseRegex = /^\d{1,3}\s[A-zÀ-ú'’\s]+$/i;
 
 const submitButtun = document.querySelector("#order");
 
@@ -185,7 +187,7 @@ submitButtun.addEventListener("click", (e) => {
   const contact = {
     firstName: document.querySelector("#firstName").value,
     lastName: document.querySelector("#lastName").value,
-    adresse: document.querySelector("#address").value,
+    address: document.querySelector("#address").value,
     city: document.querySelector("#city").value,
     email: document.querySelector("#email").value,
   };
@@ -193,86 +195,67 @@ submitButtun.addEventListener("click", (e) => {
   const firstName = contact.firstName;
   const lastName = contact.lastName;
   const city = contact.city;
-  const adresse = contact.adresse;
+  const adresse = contact.address;
   const email = contact.email;
 
-  //****Controle du Prénom****//
-  function controllerPrenom(noIntRegex, firstName) {
-    if (noIntRegex.test(firstName)) {
+  function controllerChamp(regex, valeur, champHtml, messageErreur) {
+    if (regex.test(valeur)) {
+      document.querySelector(champHtml).innerText = "";
       return true;
     } else {
-      document.querySelector("#firstNameErrorMsg").innerText =
-        "Le Prénom n'est pas valide";
-      return false;
-    }
-  }
-
-  //****Controle du Nom****//
-  function controllerNom(noIntRegex, lastName) {
-    if (noIntRegex.test(lastName)) {
-      return true;
-    } else {
-      document.querySelector("#lastNameErrorMsg").innerText =
-        "Le Nom n'est pas valide";
-      return false;
-    }
-  }
-
-  //****Controle de la ville****//
-  function controllerVille(noIntRegex, city) {
-    if (noIntRegex.test(city)) {
-      return true;
-    } else {
-      document.querySelector("#cityErrorMsg").innerText =
-        "La ville n'est pas valide";
-      return false;
-    }
-  }
-
-  //****Controle de l'email****//
-  function controllerEmail(emailRegex, email) {
-    if (emailRegex.test(email)) {
-      return true;
-    } else {
-      document.querySelector("#emailErrorMsg").innerText =
-        "L'email n'est pas valide";
-      return false;
-    }
-  }
-
-  function controllerAdresse(adresseRegex, adresse) {
-    if (adresseRegex.test(adresse)) {
-      return true;
-    } else {
-      document.querySelector("#addressErrorMsg").innerText =
-        "l'adresse n'est pas valide";
+      document.querySelector(champHtml).innerText = messageErreur;
       return false;
     }
   }
 
   //****VALIDER LE FORMULAIRE****/
-  if (
-    controllerPrenom(noIntRegex, firstName) &&
-    controllerNom(noIntRegex, lastName) &&
-    controllerVille(noIntRegex, city) &&
-    // controllerAdresse(adresseRegex, adresse) &&
-    controllerEmail(emailRegex, email)
-  ) {
+
+  let estFomulaireValide = [
+    controllerChamp(
+      noIntRegex,
+      firstName,
+      "#firstNameErrorMsg",
+      "Le Prénom n'est pas valide"
+    ),
+    controllerChamp(
+      noIntRegex,
+      lastName,
+      "#lastNameErrorMsg",
+      "Le Nom n'est pas valide"
+    ),
+    controllerChamp(
+      emailRegex,
+      email,
+      "#emailErrorMsg",
+      "L'email n'est pas valide"
+    ),
+    controllerChamp(
+      noIntRegex,
+      city,
+      "#cityErrorMsg",
+      "La ville n'est pas valide"
+    ),
+    controllerChamp(
+      adresseRegex,
+      adresse,
+      "#addressErrorMsg",
+      "L'adresse doit être au format {Numéro} {Nom de rue}"
+    ),
+  ].every((value) => value === true);
+  if (estFomulaireValide) {
     const product_ID = [];
+    cart.forEach((product) => product_ID.push(product.id));
+
     const aEnvoyer = {
-      cart,
       contact,
+      products: product_ID,
     };
-    product_ID.push(aEnvoyer);
-    fetch("http://localhost:3000/api/products");
-    {
-      methode: "POST";
-      body: {
-        JSON.stringify(product_ID);
-      }
-      headers: {
-        ("content-Type : application/json");
-      }
-    }
+
+    fetch("http://localhost:3000/api/products/order", {
+      method: "POST",
+      body: JSON.stringify(aEnvoyer),
+      headers: { "content-type": "application/json" },
+    });
+    document.location.href = "confirmation.html";
   }
 });
