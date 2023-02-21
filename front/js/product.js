@@ -1,5 +1,5 @@
 // Récupérer l'id de l'article à partir de l'url
-const id = getIdFromURL();
+const id = getDataFromURL("id");
 
 // On récupère les données de l'API
 fetch("http://localhost:3000/api/products/" + id)
@@ -15,12 +15,6 @@ fetch("http://localhost:3000/api/products/" + id)
   });
 
 // Fonction pour Générer les Porduits depuis le lien
-function getIdFromURL() {
-  const params = new Proxy(new URLSearchParams(window.location.search), {
-    get: (searchParams, prop) => searchParams.get(prop),
-  });
-  return params.id;
-}
 
 // Fonction pour afficher les éléments
 function displayProduct(product) {
@@ -70,8 +64,6 @@ function listenForCartAddittion(product) {
       return;
     }
 
-    alert("Produit bien ajouté au panier !");
-
     // On ajoute les produits au LS
     if (has("products")) {
       const products = [];
@@ -89,7 +81,13 @@ function listenForCartAddittion(product) {
       );
       if (findProduct) {
         findProduct.quantite = Number(findProduct.quantite) + Number(quantite);
+        if (findProduct.quantite < 1 || findProduct.quantite > 100) {
+          alert("La quantité maximale du panier est de 100 articles");
+          window.location.reload();
+          return;
+        }
         store("products", cart);
+        alert("Produit bien ajouté au panier !");
       } else {
         let cart = get("products");
         const canap = {
@@ -99,6 +97,7 @@ function listenForCartAddittion(product) {
         };
         cart.push(canap);
         store("products", cart);
+        alert("Produit bien ajouté au panier !");
       }
     }
     return;

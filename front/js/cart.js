@@ -93,7 +93,7 @@ function listenForQtyUpdate(products) {
       .querySelector(
         `.cart__item[data-id="${product.id}"][data-color = "${product.couleur}"] .itemQuantity`
       )
-      .addEventListener("input", (e) => {
+      .addEventListener("change", (e) => {
         const quantite = e.target.value;
         if (quantite < 1 || quantite > 100) {
           alert("Merci d'entrer une quantité comprise entre 1 et 100");
@@ -107,6 +107,7 @@ function listenForQtyUpdate(products) {
           if (findProduct) {
             findProduct.quantite =
               Number(findProduct.quantite) + (quantite - findProduct.quantite);
+
             store("products", cart);
             window.location.reload();
           }
@@ -199,7 +200,7 @@ submitButtun.addEventListener("click", (e) => {
   const email = contact.email;
 
   function controllerChamp(regex, valeur, champHtml, messageErreur) {
-    if (regex.test(valeur)) {
+    if (regex.test(valeur) && valeur.trim(" ").length > 2) {
       document.querySelector(champHtml).innerText = "";
       return true;
     } else {
@@ -255,7 +256,11 @@ submitButtun.addEventListener("click", (e) => {
       method: "POST",
       body: JSON.stringify(aEnvoyer),
       headers: { "content-type": "application/json" },
-    });
-    document.location.href = "confirmation.html";
+    })
+      .then((a) => a.json())
+      .then((res) => {
+        console.log("order", res);
+        document.location.href = "confirmation.html?orderId=" + res.orderId;
+      });
   }
 });
