@@ -1,9 +1,7 @@
 let cart = get("products");
-
-if (!cart) {
-  document.querySelector("h1").innerText = "Votre panier est vide !";
-  document.querySelector("#totalQuantity").innerHTML = "Aucun";
-  document.querySelector("#totalPrice").innerHTML = "0 €";
+if (!cart || cart.length === 0) {
+  document.querySelector("h1").innerText = "Le panier est vide";
+  document.querySelector(".cart").remove();
 } else {
   fetch("http://localhost:3000/api/products/")
     .then((reponse) => reponse.json())
@@ -14,26 +12,26 @@ if (!cart) {
       supprimerProduit(products);
       afficherTotal(products);
     });
-}
 
-// Fonction pour créer la liste complète des éléments
-function builCompleteList(cart, allProducts) {
-  const list = [];
-  cart.forEach((itemOfCart) => {
-    const fullProduct = allProducts.find((a) => a._id === itemOfCart.id);
-    list.push({
-      id: itemOfCart.id,
-      quantite: itemOfCart.quantite,
-      couleur: itemOfCart.couleur,
-      altTxt: fullProduct.altTxt,
-      colors: fullProduct.colors,
-      description: fullProduct.description,
-      imageUrl: fullProduct.imageUrl,
-      name: fullProduct.name,
-      price: fullProduct.price,
+  // Fonction pour créer la liste complète des éléments
+  function builCompleteList(cart, allProducts) {
+    const list = [];
+    cart.forEach((itemOfCart) => {
+      const fullProduct = allProducts.find((a) => a._id === itemOfCart.id);
+      list.push({
+        id: itemOfCart.id,
+        quantite: itemOfCart.quantite,
+        couleur: itemOfCart.couleur,
+        altTxt: fullProduct.altTxt,
+        colors: fullProduct.colors,
+        description: fullProduct.description,
+        imageUrl: fullProduct.imageUrl,
+        name: fullProduct.name,
+        price: fullProduct.price,
+      });
     });
-  });
-  return list;
+    return list;
+  }
 }
 
 // Fonction afficher les produits du panier

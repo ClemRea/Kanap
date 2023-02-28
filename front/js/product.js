@@ -14,8 +14,6 @@ fetch("http://localhost:3000/api/products/" + id)
     document.location.href = "index.html";
   });
 
-// Fonction pour Générer les Porduits depuis le lien
-
 // Fonction pour afficher les éléments
 function displayProduct(product) {
   const titreProduit = document.createElement("h1");
@@ -42,6 +40,9 @@ function displayProduct(product) {
     option.innerText = color;
     option.setAttribute("value", color);
     choixCouleur.appendChild(option);
+
+    // Afficher le nom du produit dans la balise titre
+    document.querySelector(".title").innerText = product.name;
   });
 }
 
@@ -87,7 +88,6 @@ function listenForCartAddittion(product) {
           return;
         }
         store("products", cart);
-        alert("Produit bien ajouté au panier !");
       } else {
         let cart = get("products");
         const canap = {
@@ -97,9 +97,8 @@ function listenForCartAddittion(product) {
         };
         cart.push(canap);
         store("products", cart);
-        alert("Produit bien ajouté au panier !");
       }
     }
-    return;
+    return alert("Produit bien ajouté au panier !");
   });
 }
