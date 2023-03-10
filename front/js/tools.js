@@ -7,7 +7,7 @@ function get(key) {
 }
 
 function has(key) {
-  return !localStorage.getItem(key);
+  return !!localStorage.getItem(key);
 }
 
 function price(amount) {

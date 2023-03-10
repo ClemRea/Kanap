@@ -66,7 +66,7 @@ function listenForCartAddittion(product) {
     }
 
     // On ajoute les produits au LS
-    if (has("products")) {
+    if (!has("products")) {
       const products = [];
       const canap = {
         id: product._id,

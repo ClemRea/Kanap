@@ -87,30 +87,29 @@ function render(product) {
 // Fonction pour savoir si on ajoute une quantité
 function listenForQtyUpdate(products) {
   products.forEach((product) => {
-    document
-      .querySelector(
-        `.cart__item[data-id="${product.id}"][data-color = "${product.couleur}"] .itemQuantity`
-      )
-      .addEventListener("change", (e) => {
-        const quantite = e.target.value;
-        if (quantite < 1 || quantite > 100) {
-          alert("Merci d'entrer une quantité comprise entre 1 et 100");
-          return;
-        }
-        if (!has("products")) {
-          let cart = get("products");
-          let findProduct = cart.find(
-            (a) => a.id === product.id && a.couleur === product.couleur
-          );
-          if (findProduct) {
-            findProduct.quantite =
-              Number(findProduct.quantite) + (quantite - findProduct.quantite);
+    const el = document.querySelector(
+      `.cart__item[data-id="${product.id}"][data-color = "${product.couleur}"] .itemQuantity`
+    );
+    el.addEventListener("change", (e) => {
+      const quantite = e.target.value;
 
-            store("products", cart);
-            window.location.reload();
-          }
-        }
-      });
+      let cart = get("products");
+      let findProduct = cart.find(
+        (a) => a.id === product.id && a.couleur === product.couleur
+      );
+      if (quantite < 1 || quantite > 100) {
+        alert("Merci d'entrer une quantité comprise entre 1 et 100");
+        el.value = findProduct.quantite;
+        return;
+      }
+      if (findProduct) {
+        findProduct.quantite =
+          Number(findProduct.quantite) + (quantite - findProduct.quantite);
+
+        store("products", cart);
+        window.location.reload();
+      }
+    });
   });
 }
 
